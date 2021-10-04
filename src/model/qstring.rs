@@ -3,11 +3,11 @@ Provides a namespace-qualified string.
 */
 
 use regex::Regex;
-use serde::export::fmt::Error;
-use serde::export::Formatter;
 use serde::{de, de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::fmt::Display;
+use std::fmt::Error;
+use std::fmt::Formatter;
 use std::str::FromStr;
 use std::string::ToString;
 
