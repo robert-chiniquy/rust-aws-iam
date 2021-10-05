@@ -45,7 +45,7 @@ use std::collections::HashMap;
 ///
 /// An IAM policy resource.
 ///
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Policy {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -69,7 +69,7 @@ pub struct Policy {
 ///
 /// From [IAM JSON Policy Elements: Version](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_version.html).
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum Version {
     #[serde(rename = "2012-10-17")]
     /// This is the current version of the policy language, and you should always
@@ -92,7 +92,7 @@ pub enum Version {
 ///
 /// From [IAM JSON Policy Elements: Statement](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_statement.html).
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Statement {
     ///
@@ -162,7 +162,7 @@ pub enum Effect {
 /// From [IAM JSON Policy Elements: Action](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_action.html)
 /// and [IAM JSON Policy Elements: NotAction](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_notaction.html).
 ///
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
 pub enum Action {
     /// Asserts that the action in the request **must** match one of the specified ones.
     Action(OneOrAny<QString>),
@@ -180,7 +180,7 @@ pub enum Action {
 /// From [AWS JSON Policy Elements: Principal](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html)
 /// and [AWS JSON Policy Elements: NotPrincipal](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_notprincipal.html).
 ///
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
 pub enum Principal {
     /// Asserts that the principal in the request **must** match one of the specified ones.
     Principal(HashMap<PrincipalType, OneOrAny>),
@@ -226,7 +226,7 @@ pub enum PrincipalType {
 /// From [IAM JSON Policy Elements: Resource](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html)
 /// and [IAM JSON Policy Elements: NotResource](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_notresource.html).
 ///
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
 pub enum Resource {
     /// Asserts that the resource in the request **must** match one of the specified ones.
     Resource(OneOrAny),
@@ -368,7 +368,7 @@ pub enum GlobalConditionOperator {
 ///
 /// The value to test an operator against.
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum ConditionValue {
     /// A String (or QString) value.
@@ -380,3 +380,5 @@ pub enum ConditionValue {
     /// A boolean value.
     Bool(bool),
 }
+
+impl Eq for ConditionValue {}
