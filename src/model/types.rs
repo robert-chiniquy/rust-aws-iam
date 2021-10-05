@@ -45,7 +45,7 @@ use std::collections::HashMap;
 ///
 /// An IAM policy resource.
 ///
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Policy {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,6 +56,20 @@ pub struct Policy {
     pub id: Option<String>,
     /// One or more policy statements
     pub statement: OneOrAll<Statement>,
+}
+
+impl PartialEq for Policy {
+    fn eq(&self, other: &Self) -> bool {
+        self.version == other.version && self.id == other.id && self.statement == other.statement
+    }
+}
+
+impl std::hash::Hash for Policy {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.version.hash(state);
+        self.id.hash(state);
+        self.statement.hash(state);
+    }
 }
 
 ///
@@ -69,7 +83,7 @@ pub struct Policy {
 ///
 /// From [IAM JSON Policy Elements: Version](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_version.html).
 ///
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 pub enum Version {
     #[serde(rename = "2012-10-17")]
     /// This is the current version of the policy language, and you should always
@@ -92,7 +106,7 @@ pub enum Version {
 ///
 /// From [IAM JSON Policy Elements: Statement](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_statement.html).
 ///
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Statement {
     ///
@@ -135,13 +149,35 @@ pub struct Statement {
     pub condition: Option<HashMap<ConditionOperator, HashMap<QString, OneOrAll<ConditionValue>>>>,
 }
 
+impl PartialEq for Statement {
+    fn eq(&self, other: &Self) -> bool {
+        self.sid == other.sid
+            && self.principal == other.principal
+            && self.effect == other.effect
+            && self.action == other.action
+            && self.resource == other.resource
+        // && self.condition == other.condition
+    }
+}
+
+impl std::hash::Hash for Statement {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.sid.hash(state);
+        self.principal.hash(state);
+        self.effect.hash(state);
+        self.action.hash(state);
+        self.resource.hash(state);
+        //        self.condition.hash(state);
+    }
+}
+
 ///
 /// The Effect element is required and specifies whether the statement results in an allow or an
 /// explicit deny. Valid values for Effect are Allow and Deny.
 ///
 /// From [IAM JSON Policy Elements: Effect](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_effect.html).
 ///
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Hash)]
 pub enum Effect {
     /// The result of successful evaluation of this policy is to allow access.
     Allow,
@@ -162,7 +198,7 @@ pub enum Effect {
 /// From [IAM JSON Policy Elements: Action](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_action.html)
 /// and [IAM JSON Policy Elements: NotAction](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_notaction.html).
 ///
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub enum Action {
     /// Asserts that the action in the request **must** match one of the specified ones.
     Action(OneOrAny<QString>),
@@ -180,12 +216,29 @@ pub enum Action {
 /// From [AWS JSON Policy Elements: Principal](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html)
 /// and [AWS JSON Policy Elements: NotPrincipal](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_notprincipal.html).
 ///
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub enum Principal {
     /// Asserts that the principal in the request **must** match one of the specified ones.
     Principal(HashMap<PrincipalType, OneOrAny>),
     /// Asserts that the principal in the request **must not** match one of the specified ones.
     NotPrincipal(HashMap<PrincipalType, OneOrAny>),
+}
+
+impl PartialEq for Principal {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Principal(l0), Self::Principal(r0)) => l0 == r0,
+            (Self::NotPrincipal(l0), Self::NotPrincipal(r0)) => l0 == r0,
+            _ => panic!("unimpl"),
+        }
+    }
+}
+
+// HACK: This only "works" if you don't need the hash to prove identity
+impl std::hash::Hash for Principal {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
+    }
 }
 
 ///
@@ -226,7 +279,7 @@ pub enum PrincipalType {
 /// From [IAM JSON Policy Elements: Resource](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html)
 /// and [IAM JSON Policy Elements: NotResource](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_notresource.html).
 ///
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, Hash)]
 pub enum Resource {
     /// Asserts that the resource in the request **must** match one of the specified ones.
     Resource(OneOrAny),
@@ -368,7 +421,7 @@ pub enum GlobalConditionOperator {
 ///
 /// The value to test an operator against.
 ///
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ConditionValue {
     /// A String (or QString) value.
@@ -379,6 +432,24 @@ pub enum ConditionValue {
     Float(f64),
     /// A boolean value.
     Bool(bool),
+}
+
+impl PartialEq for ConditionValue {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::String(l0), Self::String(r0)) => l0 == r0,
+            (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+            (Self::Float(l0), Self::Float(r0)) => l0 == r0,
+            (Self::Bool(l0), Self::Bool(r0)) => l0 == r0,
+            _ => panic!("unreachable"),
+        }
+    }
+}
+
+impl std::hash::Hash for ConditionValue {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
+    }
 }
 
 impl Eq for ConditionValue {}
