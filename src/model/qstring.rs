@@ -182,7 +182,7 @@ impl Display for QStringError {
 
 fn validate_part(part: &str) -> Result<String, QStringError> {
     lazy_static! {
-        static ref ID: Regex = Regex::new(r"^(\*|[a-zA-Z\*][a-zA-Z0-9\-_\*/]*)$").unwrap();
+        static ref ID: Regex = Regex::new(r"^(\*|[a-zA-Z\*\?][a-zA-Z0-9\-_\*/\?]*)$").unwrap();
     }
     if part.is_empty() || ID.is_match(part) {
         Ok(part.to_string())
