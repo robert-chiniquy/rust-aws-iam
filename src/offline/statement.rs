@@ -39,7 +39,7 @@ pub fn evaluate_statement(
     }
 
     // >>>>> eval resource
-    let result = eval_statement_resource(&request.resource, &statement.resource);
+    let result = eval_statement_resource(&request.resource, &statement.resource.unwrap());
     if let Some(EvaluationResult::Deny(_, _)) = result {
         return Ok(result);
     } else if let Some(EvaluationResult::Allow) = result {

@@ -425,7 +425,7 @@ impl From<&mut StatementBuilder> for Statement {
             principal,
             effect: sb.effect.clone(),
             action,
-            resource,
+            resource: Some(resource),
             condition: sb.condition.clone(),
         }
     }

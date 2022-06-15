@@ -141,7 +141,8 @@ pub struct Statement {
     /// The resources, or not-resources to match as part of this statement.
     ///
     #[serde(flatten)]
-    pub resource: Resource,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource: Option<Resource>,
     ///
     /// Any condition(s) attached to this statement.
     ///

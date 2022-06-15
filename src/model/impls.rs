@@ -112,7 +112,7 @@ impl Statement {
             principal: None,
             effect,
             action,
-            resource,
+            resource: Some(resource),
             condition: None,
         }
     }
