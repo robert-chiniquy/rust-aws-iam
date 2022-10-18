@@ -422,7 +422,7 @@ pub enum GlobalConditionOperator {
 ///
 /// The value to test an operator against.
 ///
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialOrd)]
 #[serde(untagged)]
 pub enum ConditionValue {
     /// A String (or QString) value.
@@ -433,6 +433,17 @@ pub enum ConditionValue {
     Float(f64),
     /// A boolean value.
     Bool(bool),
+}
+
+impl Ord for ConditionValue {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self == &Self::Float(f64::NAN) {
+            return std::cmp::Ordering::Less;
+        } else if other == &Self::Float(f64::NAN) {
+            return std::cmp::Ordering::Greater;
+        }
+        self.partial_cmp(other).unwrap()
+    }
 }
 
 impl PartialEq for ConditionValue {
