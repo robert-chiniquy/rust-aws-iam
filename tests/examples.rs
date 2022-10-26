@@ -2,6 +2,7 @@
 extern crate test_generator;
 
 use aws_iam::io;
+use aws_iam::model::{Principal, Statement};
 use std::fs;
 use std::path::PathBuf;
 use test_generator::test_resources;
@@ -38,5 +39,24 @@ fn read_expected_error(file_name: &PathBuf) -> String {
             "Could not read expected error from file {:?}, error: {:?}",
             &file_name, e
         ),
+    }
+}
+
+// Assert that a resource-based policy with `"Principal": "*"` is correctly parsed
+// https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
+#[test]
+fn test_principal_star() {
+    let policy =
+        std::fs::read_to_string("tests/data/good/example-101.json").expect("example-101.json");
+    let policy: aws_iam::model::Policy = serde_json::from_str(&policy).expect("policy parses");
+    if let aws_iam::model::OneOrAll::One(Statement {
+        principal: Some(Principal::Principal(p)),
+        ..
+    }) = policy.statement
+    {
+        assert_eq!(p.len(), 1);
+    } else {
+        println!("this test is currently expected to fail: {policy:#?}");
+        panic!(".")
     }
 }
