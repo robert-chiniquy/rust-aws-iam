@@ -220,9 +220,49 @@ pub enum Action {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub enum Principal {
     /// Asserts that the principal in the request **must** match one of the specified ones.
+    #[serde(deserialize_with = "deserialize_principal_string")]
     Principal(HashMap<PrincipalType, OneOrAny>),
     /// Asserts that the principal in the request **must not** match one of the specified ones.
+    #[serde(deserialize_with = "deserialize_principal_string")]
     NotPrincipal(HashMap<PrincipalType, OneOrAny>),
+}
+
+#[test]
+fn test_principal_hack_trick() -> Result<(), Box<dyn std::error::Error>> {
+    let input = r#""*""#;
+    #[derive(serde::Deserialize)]
+    #[serde(untagged)]
+    enum WhichIsIt<'a> {
+        String(&'a str),
+        Object(HashMap<PrincipalType, OneOrAny>),
+    }
+    let r: WhichIsIt<'_> = serde_json::from_str(input)?;
+    assert!(matches!(r, WhichIsIt::String(_)));
+    Ok(())
+}
+
+// HACK: Deserialization fix for "Principal": "*"
+// use serde::deserialize_with to catch the case that the value is a string
+fn deserialize_principal_string<'de, D>(
+    deserializer: D,
+) -> Result<HashMap<PrincipalType, OneOrAny>, D::Error>
+where
+    D: serde::de::Deserializer<'de>,
+{
+    #[derive(serde::Deserialize)]
+    #[serde(untagged)]
+    enum WhichIsIt<'a> {
+        String(&'a str),
+        Object(HashMap<PrincipalType, OneOrAny>),
+    }
+    let r: WhichIsIt<'_> = serde::de::Deserialize::deserialize(deserializer)?;
+    match r {
+        WhichIsIt::String(s) => Ok(HashMap::from([(
+            PrincipalType::AWS,
+            OneOrAny::One(s.to_string()),
+        )])),
+        WhichIsIt::Object(o) => Ok(o),
+    }
 }
 
 impl PartialEq for Principal {

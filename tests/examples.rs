@@ -55,6 +55,7 @@ fn test_principal_star() {
     }) = policy.statement
     {
         assert_eq!(p.len(), 1);
+        // ...
     } else {
         println!("this test is currently expected to fail: {policy:#?}");
         panic!(".")
