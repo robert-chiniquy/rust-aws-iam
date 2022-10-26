@@ -107,7 +107,7 @@ let policy = Policy {
         principal: None,
         effect: Effect::Allow,
         action: Action::Action(OneOrAny::One("s3:ListBucket".parse().unwrap())),
-        resource: Resource::this("arn:aws:s3:::example_bucket".to_string()),
+        resource: Some(Resource::this("arn:aws:s3:::example_bucket".to_string())),
         condition: None,
     }),
 };

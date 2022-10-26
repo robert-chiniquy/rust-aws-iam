@@ -157,7 +157,7 @@ fn walk_statement(statement: &Statement, visitor: Box<&mut dyn StatementVisitor>
         visitor.principal(principal);
     }
     visitor.action(&statement.action);
-    visitor.resource(&statement.resource);
+    visitor.resource(&statement.resource.as_ref().unwrap());
     if let Some(conditions) = &statement.condition {
         if let Some(condition_visitor) = visitor.condition_visitor() {
             walk_conditions(conditions, condition_visitor)

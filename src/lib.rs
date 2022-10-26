@@ -70,10 +70,10 @@ let policy = Policy {
             "s3:List*".parse().unwrap(),
             "s3:Get*".parse().unwrap(),
         ]),
-        resource: Resource::these(&mut vec![
+        resource: Some(Resource::these(&mut vec![
             "arn:aws:s3:::confidential-data".to_string(),
             "arn:aws:s3:::confidential-data/-*".to_string(),
-        ]),
+        ])),
         condition: Some(condition),
     }]),
 };

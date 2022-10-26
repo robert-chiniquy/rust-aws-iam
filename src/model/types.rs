@@ -435,6 +435,7 @@ pub enum ConditionValue {
     Bool(bool),
 }
 
+#[allow(clippy::derive_ord_xor_partial_ord)]
 impl Ord for ConditionValue {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         if self == &Self::Float(f64::NAN) {

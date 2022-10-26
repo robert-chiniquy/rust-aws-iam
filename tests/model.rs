@@ -59,7 +59,7 @@ fn test_access_policy_with_statements() {
                 principal: None,
                 effect: Effect::Allow,
                 action: Action::Action(OneOrAny::One("s3:ListBucket".parse().unwrap())),
-                resource: Resource::this("arn:aws:s3:::example_bucket".to_string()),
+                resource: Some(Resource::this("arn:aws:s3:::example_bucket".to_string())),
                 condition: None,
             },
             Statement {
@@ -67,7 +67,7 @@ fn test_access_policy_with_statements() {
                 principal: None,
                 effect: Effect::Allow,
                 action: Action::Action(OneOrAny::One("s3:SomethingElse".parse().unwrap())),
-                resource: Resource::this("arn:aws:s3:::example_bucket_2".to_string()),
+                resource: Some(Resource::this("arn:aws:s3:::example_bucket_2".to_string())),
                 condition: None,
             },
         ]),
@@ -106,10 +106,10 @@ fn test_access_policy_with_principal() {
             principal: Some(principal),
             effect: Effect::Allow,
             action: Action::Action(OneOrAny::One("s3:*".parse().unwrap())),
-            resource: Resource::these(&mut vec![
+            resource: Some(Resource::these(&mut vec![
                 "arn:aws:s3:::mybucket".to_string(),
                 "arn:aws:s3:::mybucket/*".to_string(),
-            ]),
+            ])),
             condition: None,
         }]),
     };
@@ -154,10 +154,10 @@ fn test_access_policy_with_condition() {
                 "s3:List*".parse().unwrap(),
                 "s3:Get*".parse().unwrap(),
             ]),
-            resource: Resource::these(&mut vec![
+            resource: Some(Resource::these(&mut vec![
                 "arn:aws:s3:::confidential-data".to_string(),
                 "arn:aws:s3:::confidential-data/*".to_string(),
-            ]),
+            ])),
             condition: Some(condition),
         }]),
     };
